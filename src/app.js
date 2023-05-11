@@ -11,6 +11,7 @@ App = {
         await App.loadAccount()
         await App.loadContract()
         await App.render()
+        web3.eth.defaultAccount = App.account;
     },
 
     // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
@@ -56,7 +57,6 @@ App = {
         App.contracts.TodoList.setProvider(App.web3Provider)
 
         App.todoList = await App.contracts.TodoList.deployed();
-        console.log(App.contracts)
     },
 
     render : async () => {
@@ -67,6 +67,7 @@ App = {
         
         // Update app loading state
         App.setLoading(true)
+
         $('#account').html(App.account)
 
         await App.renderTasks()
@@ -92,7 +93,7 @@ App = {
             $newTaskTemplate.find('input')
                             .prop('name', taskId)
                             .prop('checked', taskCompleted)
-                            // .on('click', App.toggleCompleted)
+                            .on('click', App.toggleCompleted)
             
             // Put the task in the correct list
             if (taskCompleted) {
@@ -105,6 +106,20 @@ App = {
         }
 
         // show task
+    },
+
+    createTask: async () => {
+        App.setLoading(true)
+        const content = $('#newTask').val()
+        await App.todoList.createTask(content)
+        window.location.reload()
+    },
+
+    toggleCompleted: async (e) => {
+        App.setLoading(true)
+        const taskId =  e.target.name
+        await App.todoList.toggleCompleted(taskId)
+        window.location.reload()
     },
 
     setLoading: (boolean) => {
